@@ -211,6 +211,47 @@ def get_page_by_title(space_key: str, title: str) -> str:
 
 
 @mcp.tool()
+def create_page(space_key: str, title: str, content: str, parent_id: str = None) -> str:
+    """Create a new page in Confluence.
+
+    Args:
+        space_key: Space key where the page will be created
+        title: Page title
+        content: Page content in Confluence storage format (HTML-like)
+        parent_id: Optional parent page ID to create as child page
+
+    Returns:
+        JSON string containing the created page details
+    """
+    if not CONFLUENCE_URL:
+        return json.dumps({"error": "CONFLUENCE_URL environment variable is not set"})
+
+    session = get_session()
+    url = f"{CONFLUENCE_URL}/rest/api/content"
+
+    payload = {
+        "type": "page",
+        "title": title,
+        "space": {"key": space_key},
+        "body": {"storage": {"value": content, "representation": "storage"}},
+    }
+
+    if parent_id:
+        payload["ancestors"] = [{"id": parent_id}]
+
+    try:
+        response = session.post(url, json=payload, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+
+        result = format_content(data)
+        result["version"] = data.get("version", {}).get("number", 1)
+        return json.dumps(result, ensure_ascii=False, indent=2)
+    except requests.exceptions.RequestException as e:
+        return json.dumps({"error": f"Failed to create page: {str(e)}"})
+
+
+@mcp.tool()
 def add_comment(page_id: str, comment: str) -> str:
     """Add a comment to a Confluence page.
 

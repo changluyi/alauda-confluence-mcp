@@ -62,6 +62,7 @@ claude mcp add confluence -s user \
 | `get_page` | 获取指定页面的详细信息 |
 | `get_page_by_title` | 按标题获取页面（需要空间 key） |
 | `list_spaces` | 列出所有可用的 Confluence 空间 |
+| `create_page` | 创建新页面（可选父页面） |
 | `add_comment` | 添加评论到页面 |
 
 ## 使用示例
