@@ -21,14 +21,14 @@ claude mcp add confluence -s user \
   -e CONFLUENCE_URL="https://your-confluence.example.com" \
   -e CONFLUENCE_USERNAME="your-username" \
   -e CONFLUENCE_PASSWORD="your-password" \
-  -- uvx --from git+https://github.com/clyi/alauda-confluence-mcp.git alauda-confluence-mcp
+  -- uvx --from git+https://github.com/changluyi/alauda-confluence-mcp.git alauda-confluence-mcp
 ```
 
 ### 方式二：使用本地安装
 
 ```bash
 # 克隆仓库
-git clone https://github.com/clyi/alauda-confluence-mcp.git
+git clone https://github.com/changluyi/alauda-confluence-mcp.git
 cd alauda-confluence-mcp
 
 # 创建虚拟环境并安装依赖

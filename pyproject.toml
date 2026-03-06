@@ -32,6 +32,6 @@ dependencies = [
 alauda-confluence-mcp = "src.alauda_confluence_mcp.server:main"
 
 [project.urls]
-Homepage = "https://github.com/clyi/alauda-confluence-mcp"
-Repository = "https://github.com/clyi/alauda-confluence-mcp.git"
-Issues = "https://github.com/clyi/alauda-confluence-mcp/issues"
+Homepage = "https://github.com/changluyi/alauda-confluence-mcp"
+Repository = "https://github.com/changluyi/alauda-confluence-mcp.git"
+Issues = "https://github.com/changluyi/alauda-confluence-mcp/issues"
