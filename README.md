@@ -8,6 +8,9 @@
 - 获取页面详情
 - 列出所有空间
 - 按标题获取页面
+- 创建页面
+- 更新页面
+- 删除页面
 - 添加评论到页面
 - 自动禁用代理设置（解决企业环境中的代理问题）
 
@@ -63,6 +66,8 @@ claude mcp add confluence -s user \
 | `get_page_by_title` | 按标题获取页面（需要空间 key） |
 | `list_spaces` | 列出所有可用的 Confluence 空间 |
 | `create_page` | 创建新页面（可选父页面） |
+| `update_page` | 更新现有页面（标题、内容） |
+| `delete_page` | 删除页面 |
 | `add_comment` | 添加评论到页面 |
 
 ## 使用示例

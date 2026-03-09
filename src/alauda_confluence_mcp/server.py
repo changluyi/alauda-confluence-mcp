@@ -6,6 +6,9 @@ This MCP server provides tools to interact with Confluence:
 - Search content using CQL
 - Get page details
 - List spaces
+- Create pages
+- Update pages
+- Delete pages
 - Add comments to pages
 """
 
@@ -249,6 +252,99 @@ def create_page(space_key: str, title: str, content: str, parent_id: str = None)
         return json.dumps(result, ensure_ascii=False, indent=2)
     except requests.exceptions.RequestException as e:
         return json.dumps({"error": f"Failed to create page: {str(e)}"})
+
+
+@mcp.tool()
+def update_page(page_id: str, title: str = None, content: str = None, version: int = None, version_message: str = None) -> str:
+    """Update an existing Confluence page.
+
+    Args:
+        page_id: Page ID to update
+        title: New page title (optional, keeps existing if not provided)
+        content: New page content in Confluence storage format (optional, keeps existing if not provided)
+        version: Current version number (optional, will auto-fetch if not provided)
+        version_message: Optional message describing the change
+
+    Returns:
+        JSON string containing the updated page details
+    """
+    if not CONFLUENCE_URL:
+        return json.dumps({"error": "CONFLUENCE_URL environment variable is not set"})
+
+    session = get_session()
+
+    # First, get the current page to fetch version and existing content if needed
+    try:
+        get_url = f"{CONFLUENCE_URL}/rest/api/content/{page_id}"
+        get_params = {"expand": "body.storage,version,space"}
+        get_response = session.get(get_url, params=get_params, timeout=30)
+        get_response.raise_for_status()
+        current_page = get_response.json()
+    except requests.exceptions.RequestException as e:
+        return json.dumps({"error": f"Failed to get current page: {str(e)}"})
+
+    # Determine version number (increment from current)
+    current_version = current_page.get("version", {}).get("number", 1)
+    new_version = version + 1 if version is not None else current_version + 1
+
+    # Use existing values if not provided
+    new_title = title if title is not None else current_page.get("title", "")
+    new_content = content if content is not None else current_page.get("body", {}).get("storage", {}).get("value", "")
+    space_key = current_page.get("space", {}).get("key", "")
+
+    # Build update payload
+    payload = {
+        "id": page_id,
+        "type": "page",
+        "title": new_title,
+        "space": {"key": space_key},
+        "body": {"storage": {"value": new_content, "representation": "storage"}},
+        "version": {"number": new_version},
+    }
+
+    if version_message:
+        payload["version"]["message"] = version_message
+
+    # Send update request
+    url = f"{CONFLUENCE_URL}/rest/api/content/{page_id}"
+
+    try:
+        response = session.put(url, json=payload, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+
+        result = format_content(data)
+        result["version"] = data.get("version", {}).get("number", new_version)
+        return json.dumps(result, ensure_ascii=False, indent=2)
+    except requests.exceptions.RequestException as e:
+        return json.dumps({"error": f"Failed to update page: {str(e)}"})
+
+
+@mcp.tool()
+def delete_page(page_id: str) -> str:
+    """Delete a Confluence page.
+
+    Args:
+        page_id: Page ID to delete
+
+    Returns:
+        JSON string containing the result of the operation
+    """
+    if not CONFLUENCE_URL:
+        return json.dumps({"error": "CONFLUENCE_URL environment variable is not set"})
+
+    session = get_session()
+    url = f"{CONFLUENCE_URL}/rest/api/content/{page_id}"
+
+    try:
+        response = session.delete(url, timeout=30)
+        response.raise_for_status()
+        return json.dumps(
+            {"success": True, "message": f"Page {page_id} deleted successfully"},
+            ensure_ascii=False,
+        )
+    except requests.exceptions.RequestException as e:
+        return json.dumps({"error": f"Failed to delete page: {str(e)}"})
 
 
 @mcp.tool()
